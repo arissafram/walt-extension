@@ -2,11 +2,11 @@
 // To add a box: drop a PNG with a transparent background into boxes/ and list it here.
 const WALT_BOXES = [
   { id: 'walt-original', name: 'Original' },
-  { id: 'walt-classic', name: 'Classic' },
-  { id: 'walt-industrial', name: 'Industrial' },
-  { id: 'walt-explorer', name: 'Explorer' },
-  { id: 'walt-tough', name: 'Tough' },
+  { id: 'walt-dexter', name: 'Dexter' },
+  { id: 'walt-ramy', name: 'Ramy' },
   { id: 'walt-sandra', name: 'Sandra' },
+  { id: 'walt-jones', name: 'Jones' },
+  { id: 'walt-arnold', name: 'Arnold' },
 ];
 const DEFAULT_BOX_ID = 'walt-original';
 
