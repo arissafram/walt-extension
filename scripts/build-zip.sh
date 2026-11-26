@@ -31,7 +31,11 @@ for f in "${FILES[@]}"; do
 done
 find dist/walt -name '.DS_Store' -delete
 
-(cd dist && zip -qr -X site/walt.zip walt)
+# Same files in, same zip out: fixed timestamps and a sorted file order, so a
+# push that doesn't change the extension doesn't change walt.zip either (and
+# the deploy skips committing to personal-site).
+find dist/walt -exec env TZ=UTC touch -t 202001010000 {} +
+(cd dist && find walt -type f | LC_ALL=C sort | TZ=UTC zip -q -X -D site/walt.zip -@)
 rm -rf dist/walt
 
 printf '{ "version": "%s" }\n' "$VERSION" > dist/site/version.json
