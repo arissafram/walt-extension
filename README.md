@@ -1,19 +1,26 @@
 # Walt Chrome Extension
 
 ## Download
-Get the latest `walt.zip` from the download page (https://arissafram.github.io/walt-extension/) or straight from
-https://github.com/arissafram/walt-extension/releases/latest/download/walt.zip
+https://arissafram.com/walt/ (download page) or https://arissafram.com/walt/walt.zip
 
 ## Releasing a new version
-1. Bump `"version"` in `manifest.json` (e.g. `1.0` → `1.1`).
+1. Bump `"version"` in `manifest.json` (e.g. `1.1` → `1.2`).
 2. Commit and push to `main`.
 
-On every push to `main`, the GitHub Action in `.github/workflows/release.yml` rebuilds `walt.zip` and attaches it to the release for that version, creating the release if the version is new. If you push without changing the version, the zip in the current release is replaced, but people who already installed it won't see "update available". The download page compares the installed version with the latest release.
+On every push to `main`, `.github/workflows/deploy-site.yml` runs `scripts/build-zip.sh` and commits the result into the `personal-site` repo under `public/walt/`: `walt.zip`, `version.json`, the download page (`site/index.html`) and `box.png`. Amplify then republishes the site. If you push without bumping the version, the zip is replaced but people won't see "update available".
 
-To build the zip locally: `./scripts/build-zip.sh` (writes `dist/walt.zip`).
+To build locally: `./scripts/build-zip.sh` (writes `dist/site/`).
+
+### One-time setup: the WALT_CREDENTIALS secret
+The workflow needs permission to write to `personal-site`:
+1. GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token.
+2. Repository access: **Only select repositories** → `personal-site`.
+3. Permissions → Repository permissions → **Contents: Read and write**.
+4. Copy the token. In `walt-extension` → Settings → Secrets and variables → Actions → **New repository secret**, name it `WALT_CREDENTIALS` and paste the token.
+5. Re-run the workflow from the Actions tab (or push again).
 
 ## How the download page knows what's installed
-`site-bridge.js` runs only on the sites listed for it in `manifest.json` (`arissafram.github.io` and localhost) and reports Walt's version to the page. To use the page on your own domain, add it to that list, push a new version, and copy `docs/index.html` to your site.
+`site-bridge.js` runs only on the sites listed for it in `manifest.json` (`arissafram.com`, `www.arissafram.com` and localhost) and reports Walt's version to the page. Every other site gets nothing.
 
 ## Install
 1. Download and unzip `walt.zip`.

@@ -1,0 +1,63 @@
+# On every push to main: build walt.zip, version.json and the download page,
+# then commit them into the personal-site repo under public/walt/.
+# Amplify rebuilds personal-site on that commit, so the files end up at
+#   https://arissafram.com/walt/            download page
+#   https://arissafram.com/walt/walt.zip    the extension
+#
+# Needs a repository secret named WALT_CREDENTIALS: a fine-grained GitHub token
+# with Contents: Read and write access to arissafram/personal-site only.
+name: Deploy Walt to personal site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for token
+        env:
+          WALT_CREDENTIALS: ${{ secrets.WALT_CREDENTIALS }}
+        run: |
+          if [ -z "$WALT_CREDENTIALS" ]; then
+            echo "::error::Add a WALT_CREDENTIALS secret (see the README) so this can write to personal-site."
+            exit 1
+          fi
+
+      - name: Build
+        run: bash scripts/build-zip.sh
+
+      - name: Check out personal-site
+        uses: actions/checkout@v4
+        with:
+          repository: arissafram/personal-site
+          token: ${{ secrets.WALT_CREDENTIALS }}
+          path: personal-site
+
+      - name: Copy files and commit
+        run: |
+          VERSION=$(jq -r .version manifest.json)
+          mkdir -p personal-site/public/walt
+          rsync -a --delete dist/site/ personal-site/public/walt/
+          cd personal-site
+          git add public/walt
+          if git diff --cached --quiet; then
+            echo "personal-site already has these files; nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update Walt download to $VERSION" \
+            -m "From arissafram/walt-extension@${GITHUB_SHA::7}"
+          git push

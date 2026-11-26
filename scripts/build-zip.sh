@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-# Builds dist/walt.zip: only the files Chrome needs, no dev files.
-# Unzips to a single "walt" folder that people pick in "Load unpacked".
+# Builds dist/site/: the folder that goes on the website at /walt/.
+#   dist/site/walt.zip      only the files Chrome needs, unzipping to a "walt" folder
+#   dist/site/version.json  {"version": "..."}, read by the download page
+#   dist/site/index.html    the download page
+#   dist/site/box.png       the box shown bouncing on the download page
 # Usage: ./scripts/build-zip.sh
 set -euo pipefail
 
@@ -22,13 +25,17 @@ FILES=(
 VERSION=$(python3 -c 'import json; print(json.load(open("manifest.json"))["version"])')
 
 rm -rf dist
-mkdir -p dist/walt
+mkdir -p dist/walt dist/site
 for f in "${FILES[@]}"; do
   cp -R "$f" dist/walt/
 done
 find dist/walt -name '.DS_Store' -delete
 
-(cd dist && zip -qr -X walt.zip walt)
+(cd dist && zip -qr -X site/walt.zip walt)
 rm -rf dist/walt
 
-echo "Built dist/walt.zip (version $VERSION)"
+printf '{ "version": "%s" }\n' "$VERSION" > dist/site/version.json
+cp site/index.html dist/site/index.html
+cp boxes/walt-original.png dist/site/box.png
+
+echo "Built dist/site/ (version $VERSION)"

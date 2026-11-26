@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Walt",
-  "version": "1.0",
+  "version": "1.1",
   "description": "A bouncing box overlay. On, Off, or Detect Sleep mode.",
   "permissions": [
     "storage",
@@ -27,7 +27,8 @@
     },
     {
       "matches": [
-        "https://arissafram.github.io/*",
+        "https://arissafram.com/*",
+        "https://www.arissafram.com/*",
         "http://localhost/*",
         "http://127.0.0.1/*"
       ],

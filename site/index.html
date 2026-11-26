@@ -106,7 +106,7 @@
 <body>
   <main>
     <div class="stage" aria-hidden="true">
-      <img id="box" src="https://raw.githubusercontent.com/arissafram/walt-extension/main/boxes/walt-original.png" alt="">
+      <img id="box" src="box.png" alt="">
     </div>
 
     <h1>Walt</h1>
@@ -115,7 +115,7 @@
     <div id="status" class="status" role="status"></div>
 
     <div class="actions">
-      <a id="download" class="btn" href="https://github.com/arissafram/walt-extension/releases/latest/download/walt.zip">Download Walt</a>
+      <a id="download" class="btn" href="walt.zip" download>Download Walt</a>
       <span id="latest" class="version">for Chrome</span>
     </div>
 
@@ -143,8 +143,6 @@
   </main>
 
   <script>
-    const REPO = 'arissafram/walt-extension';
-
     // Compare dotted versions like "1.0" and "1.2.3". Returns -1, 0 or 1.
     function compareVersions(a, b) {
       const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
@@ -155,14 +153,10 @@
       return 0;
     }
 
-    // Newest published version: the latest GitHub release, or manifest.json on main as a fallback.
+    // Newest published version, from version.json next to this page (built alongside walt.zip).
     async function latestVersion() {
       try {
-        const r = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);
-        if (r.ok) return (await r.json()).tag_name.replace(/^v/, '');
-      } catch {}
-      try {
-        const r = await fetch(`https://raw.githubusercontent.com/${REPO}/main/manifest.json`);
+        const r = await fetch('version.json', { cache: 'no-cache' });
         if (r.ok) return (await r.json()).version;
       } catch {}
       return null;
