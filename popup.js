@@ -23,7 +23,8 @@ const sizeVal = document.getElementById('size-val');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let mode = 'off';
 let miniW = 40, miniH = 29;
-let px = 20, py = 12, vx = 38, vy = 26; // preview position + speed (px/s)
+// Preview position + speed (px/s); waltStep (bounce.js) moves it.
+const pos = { x: 20, y: 12, vx: WALT_PREVIEW.speed.x, vy: WALT_PREVIEW.speed.y };
 let last = null;
 
 // ---- Preview -------------------------------------------------------------
@@ -31,15 +32,15 @@ let last = null;
 // Map the real size range (80–400px) onto the small preview stage.
 function setMiniSize(size) {
   // Grow/shrink around the box's current center rather than its top-left corner.
-  const cx = px + miniW / 2, cy = py + miniH / 2;
-  miniW = Math.round(22 + ((size - 80) / 320) * 42);
+  const cx = pos.x + miniW / 2, cy = pos.y + miniH / 2;
+  miniW = waltPreviewWidth(size);
   const ratio = mini.naturalWidth ? mini.naturalHeight / mini.naturalWidth : 0.73;
   miniH = Math.round(miniW * ratio);
   mini.style.width = miniW + 'px';
   mini.style.height = miniH + 'px';
   if (mode === 'on' && !reduceMotion) {
-    px = cx - miniW / 2;
-    py = cy - miniH / 2;
+    pos.x = cx - miniW / 2;
+    pos.y = cy - miniH / 2;
     clampToStage();
   } else {
     centerMini();
@@ -48,19 +49,19 @@ function setMiniSize(size) {
 }
 
 function clampToStage() {
-  px = Math.max(0, Math.min(px, stage.clientWidth - miniW));
-  py = Math.max(0, Math.min(py, stage.clientHeight - miniH));
+  pos.x = Math.max(0, Math.min(pos.x, stage.clientWidth - miniW));
+  pos.y = Math.max(0, Math.min(pos.y, stage.clientHeight - miniH));
 }
 
 // Center in the space above the hint text so even the largest box never touches it.
 const HINT_SPACE = 22;
 function centerMini() {
-  px = (stage.clientWidth - miniW) / 2;
-  py = Math.max(6, (stage.clientHeight - HINT_SPACE - miniH) / 2 + 2);
+  pos.x = (stage.clientWidth - miniW) / 2;
+  pos.y = Math.max(6, (stage.clientHeight - HINT_SPACE - miniH) / 2 + 2);
 }
 
 function placeMini() {
-  mini.style.transform = `translate(${Math.round(px)}px, ${Math.round(py)}px)`;
+  mini.style.transform = `translate(${Math.round(pos.x)}px, ${Math.round(pos.y)}px)`;
 }
 
 function tick(now) {
@@ -69,13 +70,7 @@ function tick(now) {
   last = now;
   if (mode !== 'on' || reduceMotion) return;
 
-  const W = stage.clientWidth, H = stage.clientHeight;
-  px += vx * dt;
-  py += vy * dt;
-  if (px <= 0) { px = 0; vx = Math.abs(vx); }
-  else if (px + miniW >= W) { px = W - miniW; vx = -Math.abs(vx); }
-  if (py <= 0) { py = 0; vy = Math.abs(vy); }
-  else if (py + miniH >= H) { py = H - miniH; vy = -Math.abs(vy); }
+  waltStep(pos, dt, stage.clientWidth, stage.clientHeight, miniW, miniH);
   placeMini();
 }
 
@@ -170,7 +165,7 @@ function init(result) {
   updateStripFade();
   const delay = String(result.idleDelay || DEFAULT_DELAY);
   delaySelect.value = [...delaySelect.options].some((o) => o.value === delay) ? delay : String(DEFAULT_DELAY);
-  applySize(result.boxSize || 182);
+  applySize(result.boxSize || WALT_SIZE.initial);
   applyMode(result.mode || 'off');
   requestAnimationFrame(tick);
 }

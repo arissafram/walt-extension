@@ -15,6 +15,7 @@ FILES=(
   background.js
   content.js
   boxes.js
+  bounce.js
   site-bridge.js
   popup.html
   popup.js

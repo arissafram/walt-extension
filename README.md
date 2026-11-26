@@ -40,3 +40,12 @@ After clicking reload on `chrome://extensions`, refresh any open tabs — tabs t
 Pick a box design from the carousel at the top of the popup. The designs live in `boxes/` (`walt-original.png` is the first one we made).
 
 To add a box: save a PNG with a transparent background into `boxes/`, then add it to the list in `boxes.js`.
+
+## Shared with arissafram.com
+The demo on arissafram.com installs this repo as a package (`"walt-extension": "github:arissafram/walt-extension#<branch>"`) and uses the same boxes and movement, so a new box or a change in `bounce.js` reaches the site the next time it updates the package (`npm update walt-extension` there).
+
+- `boxes.js`: the box list. `boxes/`: the images.
+- `bounce.js`: speed, sizes and the edge bounce.
+- `index.js` / `index.d.ts`: the module the site imports. The extension doesn't use them.
+
+`boxes.js` and `bounce.js` stay plain scripts (no `import`/`export`) because content scripts can't be modules; they also put their names on `globalThis.WaltShared`, which `index.js` re-exports. The popup UI isn't shared: the site has its own.
