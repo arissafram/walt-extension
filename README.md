@@ -14,4 +14,7 @@
 ## Testing tip
 After clicking reload on `chrome://extensions`, refresh any open tabs — tabs that were open before the reload still run the old script.
 
-The box is the pixelated box we made earlier.
+## Boxes
+Pick a box design from the carousel at the top of the popup. The designs live in `boxes/` (`walt-original.png` is the first one we made).
+
+To add a box: save a PNG with a transparent background into `boxes/`, then add it to the list in `boxes.js`.

@@ -105,10 +105,69 @@ function applySize(size) {
   setMiniSize(size);
 }
 
+// ---- Box carousel ----------------------------------------------------------
+
+const strip = document.getElementById('strip');
+const boxName = document.getElementById('box-name');
+let boxId = DEFAULT_BOX_ID;
+
+const thumbs = WALT_BOXES.map((box) => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'thumb';
+  btn.setAttribute('role', 'radio');
+  btn.setAttribute('aria-label', box.name);
+  btn.dataset.id = box.id;
+  const im = document.createElement('img');
+  im.src = waltBoxPath(box.id);
+  im.alt = '';
+  btn.appendChild(im);
+  btn.addEventListener('click', () => selectBox(box.id, true));
+  strip.appendChild(btn);
+  return btn;
+});
+
+function selectBox(id, save) {
+  boxId = waltBox(id).id;
+  boxName.textContent = waltBox(boxId).name;
+  thumbs.forEach((t) => {
+    const on = t.dataset.id === boxId;
+    t.setAttribute('aria-checked', String(on));
+    t.tabIndex = on ? 0 : -1; // one tab stop for the group; arrows move within it
+  });
+  const current = thumbs.find((t) => t.dataset.id === boxId);
+  current?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  const path = waltBoxPath(boxId);
+  if (!mini.src.endsWith(path)) mini.src = path; // 'load' handler re-fits the preview
+  if (save && hasChrome) chrome.storage.local.set({ boxId });
+}
+
+function stepBox(delta) {
+  const i = WALT_BOXES.findIndex((b) => b.id === boxId);
+  const next = WALT_BOXES[(i + delta + WALT_BOXES.length) % WALT_BOXES.length];
+  selectBox(next.id, true);
+  thumbs.find((t) => t.dataset.id === next.id)?.focus({ preventScroll: true });
+}
+
+document.getElementById('prev').addEventListener('click', () => stepBox(-1));
+document.getElementById('next').addEventListener('click', () => stepBox(1));
+strip.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); stepBox(1); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); stepBox(-1); }
+});
+
+// Hide the right-edge fade once the strip is scrolled to the end.
+function updateStripFade() {
+  strip.classList.toggle('at-end', strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 2);
+}
+strip.addEventListener('scroll', updateStripFade, { passive: true });
+
 // Works inside the extension; falls back to defaults when opened as a plain page.
 const hasChrome = typeof chrome !== 'undefined' && chrome.storage;
 
 function init(result) {
+  selectBox(result.boxId || DEFAULT_BOX_ID, false);
+  updateStripFade();
   const delay = String(result.idleDelay || DEFAULT_DELAY);
   delaySelect.value = [...delaySelect.options].some((o) => o.value === delay) ? delay : String(DEFAULT_DELAY);
   applySize(result.boxSize || 182);
@@ -119,7 +178,7 @@ function init(result) {
 mini.addEventListener('load', () => setMiniSize(parseInt(sizeInput.value, 10)));
 
 if (hasChrome) {
-  chrome.storage.local.get(['mode', 'boxSize', 'idleDelay'], init);
+  chrome.storage.local.get(['mode', 'boxSize', 'idleDelay', 'boxId'], init);
 } else {
   init({});
 }

@@ -19,6 +19,7 @@
         "<all_urls>"
       ],
       "js": [
+        "boxes.js",
         "content.js"
       ],
       "run_at": "document_idle",
@@ -37,7 +38,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "box.png"
+        "boxes/*.png"
       ],
       "matches": [
         "<all_urls>"

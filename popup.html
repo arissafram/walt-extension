@@ -66,6 +66,67 @@
     .pill[data-mode="on"] { background: var(--on-bg); color: var(--on-text); }
     .pill[data-mode="detect"] { background: var(--sleep-bg); color: var(--sleep-text); }
 
+    /* Box carousel */
+    .picker { margin-bottom: 10px; }
+    .picker-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .box-name { color: var(--text); font-weight: 500; margin-left: 4px; }
+    .nav { display: flex; gap: 4px; }
+    .nav button {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 22px;
+      padding: 0;
+      border: 0;
+      border-radius: 6px;
+      background: var(--track);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .nav button:hover { filter: brightness(0.96); }
+    .nav button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
+    .strip {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      /* Room for the 2px selection ring; scroll-padding keeps snapping and
+         scrollIntoView from pushing the first/last thumb into the clipped edge. */
+      padding: 4px;
+      margin: -4px;
+      scroll-padding-inline: 4px;
+      -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
+      mask-image: linear-gradient(to right, #000 85%, transparent);
+    }
+    .strip.at-end {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+    .strip::-webkit-scrollbar { display: none; }
+    .thumb {
+      flex: 0 0 66px;
+      height: 50px;
+      padding: 5px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--stage);
+      cursor: pointer;
+      scroll-snap-align: start;
+      transition: box-shadow 0.15s;
+    }
+    .thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .thumb:hover { box-shadow: 0 0 0 1px var(--thumb-border); }
+    .thumb[aria-checked="true"] { box-shadow: 0 0 0 2px var(--text); }
+    .thumb:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+
     .stage {
       position: relative;
       height: 116px;
@@ -190,8 +251,23 @@
     <span class="pill" id="status" data-mode="off" aria-live="polite">Disabled</span>
   </header>
 
+  <section class="picker" aria-label="Box design">
+    <div class="picker-head">
+      <span>Box <span class="box-name" id="box-name">Original</span></span>
+      <span class="nav">
+        <button type="button" id="prev" aria-label="Previous box">
+          <svg width="8" height="12" viewBox="0 0 8 12" aria-hidden="true"><path d="M6 1L1.5 6 6 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button type="button" id="next" aria-label="Next box">
+          <svg width="8" height="12" viewBox="0 0 8 12" aria-hidden="true"><path d="M2 1l4.5 5L2 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </span>
+    </div>
+    <div class="strip" id="strip" role="radiogroup" aria-label="Box design"></div>
+  </section>
+
   <div class="stage" id="stage" data-mode="off" aria-hidden="true">
-    <img id="mini" src="box.png" alt="">
+    <img id="mini" src="boxes/walt-original.png" alt="">
     <span class="hint" id="hint"></span>
   </div>
 
@@ -220,6 +296,7 @@
   </div>
   <input type="range" id="size" min="80" max="400" step="1" value="182">
 
+  <script src="boxes.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

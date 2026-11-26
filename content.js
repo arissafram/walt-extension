@@ -18,8 +18,24 @@ function contextValid() {
   }
 }
 
-let sprite = null; // box.png pre-scaled to the exact on-screen pixel size
+let sprite = null; // the box image pre-scaled to the exact on-screen pixel size
 let dpr = 1;
+let boxId = DEFAULT_BOX_ID; // from boxes.js
+
+// Swap to a different box design, keeping the box centered where it is.
+function setBox(id) {
+  boxId = waltBox(id).id;
+  if (!img) return; // overlay not created yet; createOverlay will use boxId
+  const oldW = boxW, oldH = boxH;
+  const next = new Image();
+  next.onload = () => {
+    img = next;
+    updateBoxHeight();
+    x += (oldW - boxW) / 2;
+    y += (oldH - boxH) / 2;
+  };
+  next.src = chrome.runtime.getURL(waltBoxPath(boxId));
+}
 
 function updateBoxHeight() {
   if (img && img.complete && img.naturalWidth) {
@@ -92,7 +108,7 @@ function createOverlay() {
     updateBoxHeight();
     if (visible) startLoop();
   };
-  img.src = chrome.runtime.getURL('box.png');
+  img.src = chrome.runtime.getURL(waltBoxPath(boxId));
 
   window.addEventListener('resize', resize);
 }
@@ -168,11 +184,19 @@ if (contextValid()) {
     }
   });
 
-  chrome.storage.local.get(['boxSize'], (result) => {
+  chrome.storage.local.get(['boxSize', 'boxId'], (result) => {
     if (chrome.runtime.lastError) return;
     if (result.boxSize) {
       boxW = result.boxSize;
       updateBoxHeight();
+    }
+    if (result.boxId && result.boxId !== boxId) setBox(result.boxId);
+  });
+
+  // Picking a box in the popup updates every open tab.
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.boxId && contextValid()) {
+      setBox(changes.boxId.newValue);
     }
   });
 
