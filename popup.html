@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b6b68;
+      --track: #eeede9;
+      --stage: #f4f3ef;
+      --hairline: rgba(0, 0, 0, 0.08);
+      --thumb-border: rgba(0, 0, 0, 0.18);
+      --seg-active: #ffffff;
+      --yellow: #febd17;
+      --on-bg: #e6f4ea; --on-text: #1e6b34;
+      --off-bg: #efefed; --off-text: #5f5e5a;
+      --sleep-bg: #fdf0d5; --sleep-text: #7a4f00;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1f1f1f;
+        --text: #efefef;
+        --muted: #9b9b98;
+        --track: #2e2e2e;
+        --stage: #282828;
+        --hairline: rgba(255, 255, 255, 0.08);
+        --thumb-border: rgba(255, 255, 255, 0.2);
+        --seg-active: #444444;
+        --on-bg: #17361f; --on-text: #8fd6a2;
+        --off-bg: #2e2e2e; --off-text: #b4b2a9;
+        --sleep-bg: #3d2f12; --sleep-text: #f5c96b;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      width: 248px;
+      margin: 0;
+      padding: 14px;
+      font: 13px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; }
+    .brand img { width: 18px; height: 18px; image-rendering: pixelated; }
+    h1 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+
+    .pill {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--off-bg);
+      color: var(--off-text);
+      transition: background 0.2s, color 0.2s;
+    }
+    .pill[data-mode="on"] { background: var(--on-bg); color: var(--on-text); }
+    .pill[data-mode="detect"] { background: var(--sleep-bg); color: var(--sleep-text); }
+
+    .stage {
+      position: relative;
+      height: 116px;
+      border-radius: 10px;
+      background: var(--stage);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .stage img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      will-change: transform;
+      transition: opacity 0.25s;
+    }
+    .stage[data-mode="off"] img { opacity: 0.25; }
+    .stage[data-mode="detect"] img { opacity: 0.55; }
+    .stage .hint {
+      position: absolute;
+      right: 8px;
+      bottom: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* Segmented control built on real radio inputs (keyboard + screen reader friendly) */
+    .seg {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 2px;
+      border-radius: 9px;
+      background: var(--track);
+      margin: 0 0 14px;
+      border: 0;
+    }
+    .seg input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .seg label {
+      text-align: center;
+      padding: 6px 0;
+      border-radius: 7px;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .seg input:checked + label {
+      background: var(--seg-active);
+      color: var(--text);
+      font-weight: 500;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 0 0 0.5px var(--hairline);
+    }
+    .seg input:focus-visible + label { outline: 2px solid #3b82f6; outline-offset: 1px; }
+
+    .delay {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: -4px 0 14px;
+      color: var(--muted);
+    }
+    .delay { transition: opacity 0.15s; }
+    .delay.disabled { opacity: 0.45; }
+    .delay select:disabled { cursor: default; }
+    .delay select {
+      -webkit-appearance: none;
+      appearance: none;
+      font: inherit;
+      color: var(--text);
+      background: var(--track) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 9px center;
+      border: 0;
+      border-radius: 7px;
+      padding: 5px 26px 5px 10px;
+      cursor: pointer;
+    }
+    .delay select:focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .row output { color: var(--text); font-variant-numeric: tabular-nums; }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      margin: 6px 0 2px;
+      border-radius: 2px;
+      background: linear-gradient(var(--text), var(--text)) 0 / var(--fill, 30%) 100% no-repeat, var(--track);
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: 0.5px solid var(--thumb-border);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+    }
+    input[type="range"]:focus-visible::-webkit-slider-thumb { outline: 2px solid #3b82f6; outline-offset: 1px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pill, .seg label, .stage img { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="icon32.png" alt="">
+      <h1>Walt</h1>
+    </div>
+    <span class="pill" id="status" data-mode="off" aria-live="polite">Disabled</span>
+  </header>
+
+  <div class="stage" id="stage" data-mode="off" aria-hidden="true">
+    <img id="mini" src="box.png" alt="">
+    <span class="hint" id="hint"></span>
+  </div>
+
+  <fieldset class="seg" aria-label="Mode">
+    <input type="radio" name="mode" id="mode-on" value="on"><label for="mode-on">On</label>
+    <input type="radio" name="mode" id="mode-off" value="off"><label for="mode-off">Off</label>
+    <input type="radio" name="mode" id="mode-detect" value="detect"><label for="mode-detect">Sleep</label>
+  </fieldset>
+
+  <div class="delay disabled" id="delay-row">
+    <label for="delay">Show after</label>
+    <select id="delay" disabled>
+      <option value="15">15 sec</option>
+      <option value="30">30 sec</option>
+      <option value="60">1 min</option>
+      <option value="120">2 min</option>
+      <option value="300">5 min</option>
+      <option value="600">10 min</option>
+      <option value="900">15 min</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label for="size">Size</label>
+    <output id="size-val" for="size">182px</output>
+  </div>
+  <input type="range" id="size" min="80" max="400" step="1" value="182">
+
+  <script src="popup.js"></script>
+</body>
+</html>
