@@ -2,7 +2,7 @@
 
 A Chrome extension that bounces a box around on top of your pages, like a screensaver.
 
-![Walt](./docs/screenshot.png)
+<img src="./docs/popup.png" width="249" alt="Walt popup">
 
 ## Install
 
@@ -10,8 +10,6 @@ A Chrome extension that bounces a box around on top of your pages, like a screen
 2. Open `chrome://extensions` and turn on **Developer mode**.
 3. Click **Load unpacked** and choose the unzipped folder.
 4. Pin Walt, then click it to pick a box, a size, and a mode: **On**, **Off**, or **Sleep** (shows after a stretch of no activity, hides when you move).
-
-<img src="./docs/popup.png" width="249" alt="Walt popup">
 
 ## Develop
 
