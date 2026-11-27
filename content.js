@@ -1,10 +1,9 @@
 // content.js
 let canvas, ctx, img;
 let visible = false;
-let x = 100, y = 100;
-// Speed in pixels per second (was 2.2 / 1.6 px per frame at 60fps).
-let vx = 132, vy = 96;
-let boxW = 182, boxH = 182;
+// Position and velocity; waltStep (bounce.js) moves it.
+const pos = { x: 100, y: 100, vx: WALT_SPEED.x, vy: WALT_SPEED.y };
+let boxW = WALT_SIZE.initial, boxH = WALT_SIZE.initial;
 let animId = null;
 let lastTime = null;
 
@@ -31,8 +30,8 @@ function setBox(id) {
   next.onload = () => {
     img = next;
     updateBoxHeight();
-    x += (oldW - boxW) / 2;
-    y += (oldH - boxH) / 2;
+    pos.x += (oldW - boxW) / 2;
+    pos.y += (oldH - boxH) / 2;
   };
   next.src = chrome.runtime.getURL(waltBoxPath(boxId));
 }
@@ -135,18 +134,12 @@ function startLoop() {
     const w = Math.min(boxW, W);
     const h = Math.min(boxH, H);
 
-    x += vx * dt;
-    y += vy * dt;
-
-    if (x <= 0) { x = 0; vx = Math.abs(vx); }
-    else if (x + w >= W) { x = W - w; vx = -Math.abs(vx); }
-    if (y <= 0) { y = 0; vy = Math.abs(vy); }
-    else if (y + h >= H) { y = H - h; vy = -Math.abs(vy); }
+    waltStep(pos, dt, W, H, w, h);
 
     ctx.imageSmoothingEnabled = false; // reset whenever the canvas is resized
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     // Whole device pixels + 1:1 sprite size = no resampling blur per frame.
-    ctx.drawImage(sprite, Math.round(x * dpr), Math.round(y * dpr),
+    ctx.drawImage(sprite, Math.round(pos.x * dpr), Math.round(pos.y * dpr),
       Math.round(w * dpr), Math.round(h * dpr));
   }
   animId = requestAnimationFrame(loop);
@@ -179,8 +172,8 @@ if (contextValid()) {
       const oldW = boxW, oldH = boxH;
       boxW = msg.size;
       updateBoxHeight();
-      x += (oldW - boxW) / 2;
-      y += (oldH - boxH) / 2;
+      pos.x += (oldW - boxW) / 2;
+      pos.y += (oldH - boxH) / 2;
     }
   });
 

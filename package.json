@@ -1,0 +1,23 @@
+{
+  "name": "walt-extension",
+  "version": "1.1.0",
+  "description": "Walt's box designs and bounce code, for embedding a Walt demo in a web page. The Chrome extension itself needs no build step.",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./boxes/*": "./boxes/*"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "boxes.js",
+    "bounce.js",
+    "boxes"
+  ],
+  "private": true
+}
