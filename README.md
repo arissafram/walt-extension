@@ -15,11 +15,14 @@ A Chrome extension that bounces a box around on top of your pages, like a screen
 
 Load this folder with **Load unpacked**. After changing code, reload it on `chrome://extensions` and refresh open tabs.
 
-```bash
-./scripts/build-zip.sh   # builds dist/site/: walt.zip, version.json, download page
-```
-
 - **Add a box:** save a transparent PNG into `boxes/` and add it to `boxes.js`.
-- **Release:** bump `"version"` in `manifest.json` and push to `main`. `.github/workflows/deploy-site.yml` builds the zip and commits it to `personal-site` under `public/walt/`. It needs a `WALT_CREDENTIALS` secret: a fine-grained token with Contents read/write on `personal-site`.
-- **Site bridge:** `site-bridge.js` runs only on arissafram.com and localhost and tells the download page which version is installed.
-- **Package:** arissafram.com's demo installs this repo as a package. `index.js` re-exports the box list (`boxes.js`) and bounce settings (`bounce.js`); the extension itself doesn't use it.
+- **Release:** bump `"version"` in `manifest.json` and push to `main`.
+- **Build the zip locally:** `./scripts/build-zip.sh` (writes `dist/site/`).
+
+## How it connects to arissafram.com
+
+The download page and the demo on arissafram.com come from this repo:
+
+- Pushing to `main` builds `walt.zip` and copies it into `personal-site` (needs the `WALT_CREDENTIALS` token secret).
+- `site-bridge.js` lets the download page see which version you have installed.
+- The site's demo imports the boxes and bounce settings from `index.js`.
